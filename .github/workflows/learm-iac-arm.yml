@@ -31,6 +31,25 @@ jobs:
       with:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+  deployIaC:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Login to Azure
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # Deploy ARM template
+      - name: Deploy ARM template
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            cd infra/vsDeploy
+            az deployment group create --resource-group rg-learn-azure-IaC --template-file WebSite.json --parameters WebSite.parameters.json
+
   deploy:
     runs-on: windows-latest
     needs: build
